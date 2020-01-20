@@ -35,7 +35,7 @@ SRC_URI += "\
 # functions efi_call_foo and efi_shim_exit are not implemented for arm64 yet
 COMPATIBLE_HOST_aarch64 = 'null'
 
-EFI_BOOT_PATH = "/boot/efi/EFI/BOOT"
+EFI_BOOT_PATH ?= "/boot/efi/EFI/BOOT"
 
 GRUB_SECURE_BOOT_MODULES += "${@'efivar password_pbkdf2 ' if d.getVar('UEFI_SB', True) == '1' else ''}"
 
@@ -177,8 +177,8 @@ fakeroot do_chownboot() {
 }
 addtask chownboot after do_deploy before do_package
 
-# Override the do_deploy() in oe-core.
-do_deploy_class-target() {
+# Append the do_deploy() in oe-core.
+do_deploy_append_class-target() {
     install -m 0644 "${D}${EFI_BOOT_PATH}/${GRUB_IMAGE}" "${DEPLOYDIR}"
 
     install -d "${DEPLOYDIR}/efi-unsigned"
@@ -186,7 +186,7 @@ do_deploy_class-target() {
     cp -af "${D}${EFI_BOOT_PATH}/${GRUB_TARGET}-efi" "${DEPLOYDIR}/efi-unsigned"
 }
 
-FILES_${PN} += "/boot/efi"
+FILES_${PN} += "${EFI_BOOT_PATH}"
 
 CONFFILES_${PN} += "\
     ${EFI_BOOT_PATH}/grub.cfg \
